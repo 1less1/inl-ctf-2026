@@ -1,0 +1,90 @@
+Alyssa Interview & Summary 
+Individual Summary: 
+Alyssa is a skilled and creative senior backend network engineer at Celestic, known for her 
+exceptional attention to detail and unique style. She has contributed significantly to Celestic's 
+internal node structure and organization. Besides her technical prowess, Alyssa is a passionate 
+environmental advocate and participates in various community sustainability initiatives. In her 
+free time, she enjoys hiking and experimenting with new recipes. 
+Alyssa takes great pride in her work and enjoys the challenge of creating innovative visual 
+constructs to better communicate her ideas to colleagues and clients. She continually seeks to 
+expand her skills, experiment with new techniques and tools, and push the boundaries of her 
+craft. However, she feels pressured to demonstrate her worth to project managers and struggles 
+to manage multiple projects and deadlines effectively. 
+Despite these challenges, Alyssa remains committed to her craft and Celestic's growth. Her 
+passion for large-scale system design is matched only by her dedication to making a positive 
+impact on the world. 
+
+Interview:
+Investigator: Good morning, Alyssa! Thanks for taking the time to meet with me. I'm 
+investigating a possible insider threat at Celestic Telecom, and I'd like to ask you some 
+questions. 
+Alyssa: Hi! Sure, no problem at all. I'm happy to help. 
+Investigator: Great! So, can you tell me a little bit about the work you specialize in? 
+Alyssa: Yeah, I'm a network engineer, and I love creating secure systems that promote reliable 
+communication on a large scale. 
+Investigator: That sounds fascinating. Have you been working on any projects you're 
+particularly proud of recently? 
+Alyssa: Yeah, I recently did a redundancy test on our 5G internal node structure, and it was great 
+to see the improvements in reliability that we were able to achieve. 
+Investigator: That's awesome. I heard you're also really into sustainability. Can you tell me 
+about some of the initiatives you've been involved in? 
+Alyssa: Definitely! I've worked on a bunch of different things, from local recycling programs to 
+community gardens to clean energy advocacy campaigns. I believe even small actions can have a 
+big impact on protecting the planet. 
+Investigator: That's amazing. What do you like to do in your free time when you're not 
+working? 
+Alyssa: Well, it's hard to find a time when I'm not working, but when I do have some free time, I 
+love spending time outdoors, whether hiking, camping, or just enjoying a picnic in the park. 
+Actually, I went to Liberty Park here in Salt Lake City last weekend, and it was perfect. I also 
+enjoy experimenting with new recipes in the kitchen and trying out different restaurants around 
+the city. 
+Investigator: Sounds great. Have you noticed anything strange happening around the office 
+lately? 
+Alyssa: No, everything's been pretty normal, as far as I can tell. Why do you ask? 
+Investigator: Well, there's been a breach of one of Celestic's internal projects, and we're trying 
+to figure out if anyone might be involved. Have you noticed anyone acting suspiciously or 
+accessing information they shouldn't be? 
+Alyssa: Hmm, no, I haven't seen anything like that. We all have pretty strict access controls, and 
+I haven't seen anyone trying to access anything they shouldn't. 
+Interview & Summary 
+Investigator: Do you think anyone might have a motive to leak confidential information related 
+to your work on sustainability initiatives? 
+Alyssa: No, I can't really imagine why someone would do that, and I don't have access to any 
+confidential information related to those projects, anyway. 
+Investigator: Okay, thanks for your help. I may need to follow up with you if I have more 
+questions. 
+Alyssa: No problem, happy to help out. 
+
+
+Alyssa Resume:
+Alyssa 
+Martinez 
+Experience 
+2019–Present 
+Network Engineer• Celestic 
+2016–2019 
+Linux Systems Administrator• Falcon Creative 
+2011–2016 
+Freelance 
+As a Network Engineer, I managed projects from start to finish. As a 
+Linux System Administrator, I developed and maintained mail, active 
+directory and virtual desktops. I collaborated with clients to create design 
+concepts that fulfilled their business requirements and maintained their 
+services. Additionally, as a freelance graphic designer, I created logos and 
+marketing materials for small businesses and non-profit organizations. I 
+managed several projects at once, ensuring that they were completed on 
+time and within budget while providing high-quality work. 
+Education 
+California College of the Arts, San Francisco, CA 
+• Bachelor of Computer Science 
+Objective 
+I’m a creative and talented network engineer with over ten years of 
+experience in large-scale system design for various tech companies. Fixing 
+for a challenging role that allows me to use my skills to impact the world 
+positively. 
+Hobbies 
+I'm a young and creative person with a variety of hobbies and interests. 
+Whenever I have free time, I enjoy hiking and camping. I love 
+experimenting with new recipes and cooking up unique and delicious 
+dishes in the kitchen. With my active lifestyle and artistic spirit, I'm always 
+up for a new adventure 
