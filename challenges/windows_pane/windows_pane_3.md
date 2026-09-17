@@ -1,5 +1,5 @@
+[Home](../../README.md) | [Challenges](../../challenges/challenges.md) | [Tools](../../tools/tools.md) 
 # Windows Pane 3
-
 ## Scenario
 A **malicious executable** was found on one of Jubilife's employee workstations. Initial forensics have determined it is a **reverse TCP callback to a command and control server**. Unfortunately, the employee's machine was located on an older network segment that does not contain monitoring tools like Malcolm. However, all machines on the network run a **custom host based logging system**, which utilizes Scheduled Tasks, PowerShell, and Process Monitor to record key Windows security features after Microsoft Defender identifies malicious activity.
 
