@@ -18,13 +18,16 @@ Celestic provides core communications services to three critical infrastructure 
 Investigate the suspected intrusion across Celestic's infrastructure to confirm the breach, determine the attack vector and scope, and identify what actions the adversary took.
 
 # Security Challenges
-Windows Pane
-An Alarming BACnet
-Can You Fix It Dashboard
-OSINT
-Final Showdown
+### [Windows Pane](./challenges/windows_pane/windows_pane_3.md)  
+- Category: Digital Forensics & Incident Response/Host Analysis
+- Target: Compromised Employee Workstation (ENGINEERINGWKS)
+- Sources: Windows Process Monitor (ProcMon) logs, FileSystem records
+### An Alarming BACnet  
+### Can You Fix It Dashboard  
+###  OSINT  
+### Final Showdown  
 
-- Note: Rename these better once you review each markdown guide
+- Note: Rename these better once you review each markdown guide --> also hyperlink each to their own respective page
 
 # Tools
 ## Malcolm
