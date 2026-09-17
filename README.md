@@ -19,8 +19,8 @@ Celestic provides core communications services to three critical infrastructure 
 Investigate the suspected intrusion across Celestic's infrastructure to confirm the breach, determine the attack vector and scope, and identify what actions the adversary took.
 
 ## Navigation
-- ### [Home](../../README.md)  
-- ### [Challenges](../../challenges/challenges.md)  
-- ### [Tools](../../tools/tools.md)  
+- ### [Home](./README.md)  
+- ### [Challenges](./challenges/challenges.md)  
+- ### [Tools](./tools/tools.md)  
 
 

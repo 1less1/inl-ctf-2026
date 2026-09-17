@@ -1,4 +1,4 @@
-[Home](../../README.md) | [Challenges](../../challenges/challenges.md) | [Tools](../../tools/tools.md) 
+[Home](../README.md) | [Challenges](../challenges/challenges.md) | [Tools](../tools/tools.md) 
 # Security Challenges
 ### [Windows Pane](./challenges/windows_pane/windows_pane_3.md)  
 - Category: Digital Forensics & Incident Response/Host Analysis
