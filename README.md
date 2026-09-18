@@ -23,4 +23,8 @@ Investigate the suspected intrusion across Celestic's infrastructure to confirm 
 - ### [Challenges](./challenges/challenges.md)  
 - ### [Tools](./tools/tools.md)  
 
-
+## ICS Water System Presentations
+![Data Net Architecture - Water Systems](./images/ics_presentations/data_net_architecture_water_systems.png)
+![High Impact Events - Water Systems](./images/ics_presentations/high_impact_events_water_systems.png)
+![Weaknesses - Water Systems](./images/ics_presentations/weaknesses_water_systems.png)
+![Cyber Threats - Water Systems](./images/ics_presentations/cyber_threats_water_systems.png)

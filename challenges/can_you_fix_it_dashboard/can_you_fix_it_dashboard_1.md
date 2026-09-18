@@ -2,10 +2,10 @@
 # Can You Fix It Dashboard 1
 
 ## Scenario
-Field technicians at Snowpoint are experiencing critical malfunctions with their custom vehicles, specifically involving engine ignition failures and unresponsive climate control systems. Engineers suspect a **cyber physical anomaly** within either the **Electronic Control Units** (ECUs), **Engine Control Modules** (ECMs), or the **HVAC systems**. To investigate without grounding the fleet, security teams are auditing a simulator harness that hosts the ECU dashboard on ``web port 5001`` and a configuration database on ``Modbus port 5021``. They are searching for security flaws, such as an **exposed access PIN**, that could allow an external attacker to manipulate these vehicle modules.
+Field technicians at Snowpoint are experiencing critical malfunctions with their custom vehicles, specifically involving engine ignition failures and unresponsive climate control systems. Engineers suspect a **cyber physical anomaly** within either the **Electronic Control Units** (ECUs), **Engine Control Modules** (ECMs), or the **HVAC systems**. To investigate without grounding the fleet, security teams are auditing a simulator harness that hosts the ECU dashboard on `web port 5001` and a configuration database on `Modbus port 5021`. They are searching for security flaws, such as an **exposed access PIN**, that could allow an external attacker to manipulate these vehicle modules.
 
 ## Timeline and Incident Response
-To analyze session management, a dummy PIN (``1234``) was submitted to the ``/update_permissions`` endpoint, and the response headers were evaluated using browser developer tools.
+To analyze session management, a dummy PIN (`1234`) was submitted to the `/update_permissions` endpoint, and the response headers were evaluated using browser developer tools.
 ![ECU dashboard dummy pin](./ecu_dashboard_dummy_pin.png)  
 
 To determine if the authentication mechanism triggered privilege escalation within the dashboard, application storage was inspected for any tokens or cookies assigned to the current browser session.
@@ -15,18 +15,18 @@ To determine if the authentication mechanism triggered privilege escalation with
 ---
 
 ### Finding  
-The application relies on insecure, clientside role tracking. Upon PIN submission, the server returns a Base64 encoded cookie ``permission=YmFzaWM=`` that decodes directly to the plaintext string ``basic``.
+The application relies on insecure, clientside role tracking. Upon PIN submission, the server returns a Base64 encoded cookie `permission=YmFzaWM=` that decodes directly to the plaintext string `basic`.
 
 ---
 
-To test the web application's access controls, the target privilege level ``diagnostics`` was Base64 encoded to ``ZGlhZ25vc3RpY3M=``.
+To test the web application's access controls, the target privilege level `diagnostics` was Base64 encoded to `ZGlhZ25vc3RpY3M=`.
 The browser's session cookie was manually modified with this payload, and the request was resubmitted.
 ![ECU dashboard cookie](./ecu_dashboard_diagnostics_cookie.png)  
 
 ---
 
 ### Finding  
-Injecting the payload successfully bypassed the frontend PIN screen and granted access to the ``Diagnostic View``, confirming a vulnerability stemming from flawed client side session tracking.
+Injecting the payload successfully bypassed the frontend PIN screen and granted access to the `Diagnostic View`, confirming a vulnerability stemming from flawed client side session tracking.
 
 ---
 
@@ -39,7 +39,7 @@ The bulk scans failed or returned empty datasets, which revealed that the Modbus
 
 ---
 
-A Python script using the `pymodbus` package was developed to query the server on ``port 5021`` for exactly one register at a time, starting from ``address 0``:
+A Python script using the `pymodbus` package was developed to query the server on `port 5021` for exactly one register at a time, starting from `address 0`:
 ```python
 import time
 from pymodbus.client import ModbusTcpClient
@@ -102,13 +102,13 @@ PS C:\Users\coreadmin\Downloads> python .\query_modbus.py
 ---
 
 ### Finding 
-The individual scan successfully avoided server errors and dumped the first few ``Input Registers``. This exposed the environment's configuration values, including the baseline port layouts, the default PIN: ``1234``, and the valid diagnostic PIN: ``39578``.
+The individual scan successfully avoided server errors and dumped the first few `Input Registers`. This exposed the environment's configuration values, including the baseline port layouts, the default PIN: `1234`, and the valid diagnostic PIN: `39578`.
 
 ---
 
 ## Summary/Solution
 ![Modbus logo](./modbus_logo.png)  
-During an audit of the vehicle simulator harness, a flawed client side session tracking mechanism was discovered on the ECU dashboard's web interface. By modifying a ``Base64`` encoded browser cookie, the frontend PIN authentication was bypassed, granting access to the ``Diagnostic View``. Subsequently, the configuration database on the Modbus server was enumerated using a custom Python script designed to bypass the server's multi-register request restrictions. Querying exactly one register at a time successfully dumped the ``Input Registers`` and exposed the valid diagnostic PIN: ``39578``.
+During an audit of the vehicle simulator harness, a flawed client side session tracking mechanism was discovered on the ECU dashboard's web interface. By modifying a `Base64` encoded browser cookie, the frontend PIN authentication was bypassed, granting access to the `Diagnostic View`. Subsequently, the configuration database on the Modbus server was enumerated using a custom Python script designed to bypass the server's multi-register request restrictions. Querying exactly one register at a time successfully dumped the `Input Registers` and exposed the valid diagnostic PIN: `39578`.
 
 
 

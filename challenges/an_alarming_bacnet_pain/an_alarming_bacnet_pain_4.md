@@ -26,8 +26,8 @@ The raw communication stream was isolated, and the 6 packets were downloaded as 
 
 ### Finding  
 The request-response transaction contained two distinct packet types:
-- Packets 2, 4, and 6 were empty server acknowledgments (``Complex-ACK``)
-- Packets 1, 3, and 5 were the actual data-bearing requests (``Confirmed-REQ atomicWriteFile``)
+- Packets 2, 4, and 6 were empty server acknowledgments (`Complex-ACK`)
+- Packets 1, 3, and 5 were the actual data-bearing requests (`Confirmed-REQ atomicWriteFile`)
 
 Drilling into `stream access → File Data:` revealed the standard ZIP file magic signature (`50 4B 03 04` / `PK..`) starting in packet 1.
 
@@ -38,7 +38,7 @@ Because BACnet does not reassemble file transfers like HTTP or TCP streams, the 
 - Packet 3: 350 bytes (offset 350)
 - Packet 5: 98 bytes (offset 700)
 
-The raw concatenation previously had framing discrepancies throwing a `BadZipFile: Bad magic number for central directory` error. Python was used to convert the 3 raw hex chunks into binary and merge them end-to-end (``350 bytes + 350 bytes + 98 bytes = 798 bytes``).  
+The raw concatenation previously had framing discrepancies throwing a `BadZipFile: Bad magic number for central directory` error. Python was used to convert the 3 raw hex chunks into binary and merge them end-to-end (`350 bytes + 350 bytes + 98 bytes = 798 bytes`).  
 
 The password protected archive was then extracted using the key provided in the initial prompt: `jubilife_BMS_configuration!`. This unpacked the file `fire_suppression_config.txt`.
 ```shell
@@ -106,7 +106,7 @@ BINARY
 ``` 
 
 ### Finding 
-Inspecting the sensor entries within `fire_suppression_config.txt` revealed that while all other heat detectors had a setpoint of ``135.0``, `BINARY 4 (HD-LB)` had been maliciously dropped to ``72.4``:
+Inspecting the sensor entries within `fire_suppression_config.txt` revealed that while all other heat detectors had a setpoint of `135.0`, `BINARY 4 (HD-LB)` had been maliciously dropped to `72.4`:
 ```shell
 BINARY 4(  "HD-LB",   72.4,  "Heat Detector - Lab B",       "Lab B",        "927ab89245")
 ```
