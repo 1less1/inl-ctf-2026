@@ -1,5 +1,6 @@
 [Home](../README.md) | [Challenges](../challenges/challenges.md) | [Tools](../tools/tools.md) 
 # Tools
+
 ## Malcolm
 ![Malcolm Logo](./images/malcolm_logo.png)  
 **Malcolm** is an open source network traffic analysis tool (**NTA**) and network security monitoring (**NSM**) suite developed by **CISA** (Cybersecurity and Infrastructure Security Agency) in partnership with Idaho National Laboratory (**INL**). It packages server industry standard tools into a unified **Docker/Kubernetes** container stack, designed to ingest, enrich, and visualize full packet captures (PCAP), **Zeek** logs, and **Suricata** alerts.
@@ -42,14 +43,35 @@ Centralized authentication, RBAC, and identity management across Malcolm's micro
 ![Extracted Files dashboard](./images/extracted_files_dashboard.png)  
 Automatically captures files transmitted across the wire via Zeek, scanning them for malware, signatures, and entropy.
 
+
 ## Wireshark
 ![Wireshark logo](./images/wireshark_logo.png)  
 Network traffic analyzer providing full packet inspection, protocol dissection, and deep forensics across hundreds of protocols to isolate anomalies, decode payloads, and export session artifacts.
+
 
 ## Nmap
 ![Nmap logo](./images/nmap_logo.png)  
 Network scanning tool that enables host/topology discovery, port and service fingerprinting, and vulnerability assessment (misconfigurations, default credentials, and known CVEs).
 
-## Query Gen HTML
+
+## Query Gen
 ![Nmap logo](./images/malcolm_query_gen.png)  
-Static query generation tool used for Malcolm Dashboards, Arkime, and Wireshark. HTML template [`query_gen.html`](./query_gen/query_gen.html) can be opened locally (**no need for internet connection**) with user inputs to dynamically generate network queries for the tool of your choice. Developed with the help of `Google Gemini`!
+Locally developed static query generation tool used for Malcolm Dashboards, Arkime, and Wireshark. HTML template [`query_gen.html`](./query_gen/query_gen.html) can be opened locally (**no need for internet connection**) with user inputs to dynamically generate network queries for the tool of your choice. Developed with the help of `Google Gemini`!
+
+
+## Future Tooling
+
+### CSET
+A free, standalone desktop software application developed by the U.S. Cybersecurity and Infrastructure Security Agency (CISA) to help organizations evaluate the security posture of their IT and Operational Technology (OT) networks.  
+
+- [GitHub Releases](https://github.com/cisagov/cset/releases)  
+
+How does it evaluate?
+- Question based assessment
+- Network topology analysis
+- Security Assurance Level (SAL) determination
+- Gap analysis
+
+What does it evaluate against?
+- NIST Frameworks: `NIST SP 800-82` (specifically tailored for Industrial Control Systems), `NIST SP 800-53`, and the broader `NIST Cybersecurity Framework` (CSF)
+- Energy & Power Standards: `NERC CIP` (North American Electric Reliability Corporation Critical Infrastructure Protection) standards and `NISTIR 7628` (Smart Grid Cyber Security)
