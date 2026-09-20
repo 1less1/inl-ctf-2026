@@ -49,3 +49,7 @@ Network traffic analyzer providing full packet inspection, protocol dissection, 
 ## Nmap
 ![Nmap logo](./images/nmap_logo.png)  
 Network scanning tool that enables host/topology discovery, port and service fingerprinting, and vulnerability assessment (misconfigurations, default credentials, and known CVEs).
+
+## Query Gen HTML
+![Nmap logo](./images/malcolm_query_gen.png)  
+Static query generation tool used for Malcolm Dashboards, Arkime, and Wireshark. HTML template [`query_gen.html`](./query_gen/query_gen.html) can be opened locally (**no need for internet connection**) with user inputs to dynamically generate network queries for the tool of your choice. Developed with the help of `Google Gemini`!

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Analysis Query Builder</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --border: #334155;
+            --input-bg: #0f172a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background-color: var(--panel-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        h2 { margin-top: 0; font-size: 1.2rem; color: var(--accent); display: flex; justify-content: space-between; align-items: center;}
+        .form-group { margin-bottom: 1rem; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-muted);
+        }
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .platform-select {
+            background-color: #0369a1;
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .help-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+        .code-container {
+            background-color: #000;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            color: #10b981;
+            min-height: 250px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background-color: #7dd3fc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="panel">
+        <div class="form-group">
+            <label style="color: var(--accent); font-size: 1rem;">Target Platform</label>
+            <select id="platform" class="platform-select" onchange="generateQuery()">
+                <option value="malcolm">Malcolm / Zeek (KQL)</option>
+                <option value="arkime">Arkime (Search Expression)</option>
+                <option value="wireshark">Wireshark (Display Filter)</option>
+            </select>
+        </div>
+
+        <div class="help-text" style="margin-bottom: 1rem;">Use commas to search multiple items (e.g., 10.0.0.1, 10.0.0.2).</div>
+        
+        <div class="form-group">
+            <label>Source IP Address(es)</label>
+            <input type="text" id="srcIp" oninput="generateQuery()" placeholder="e.g. 192.168.1.100, 10.0.0.5">
+        </div>
+
+        <div class="form-group">
+            <label>Destination IP Address(es)</label>
+            <input type="text" id="dstIp" oninput="generateQuery()" placeholder="e.g. 8.8.8.8, 1.1.1.1">
+        </div>
+
+        <div class="form-group">
+            <label>Target Port(s)</label>
+            <input type="text" id="dstPort" oninput="generateQuery()" placeholder="e.g. 80, 443, 53">
+        </div>
+
+        <div class="form-group">
+            <label>Protocol(s)</label>
+            <input type="text" id="protocol" oninput="generateQuery()" placeholder="e.g. http, dns, tls">
+        </div>
+
+        <div class="form-group">
+            <label>Exclude IP(s)</label>
+            <input type="text" id="excludeIp" oninput="generateQuery()" placeholder="e.g. 127.0.0.1">
+        </div>
+    </div>
+
+    <div class="panel" style="height: fit-content;">
+        <h2>Generated Query</h2>
+        <div class="code-container" id="queryOutput"></div>
+        <button onclick="copyToClipboard()">Copy to Clipboard</button>
+        <span id="copyConfirm" style="color: var(--accent); margin-top: 0.5rem; display: block; text-align: center; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s;">Copied!</span>
+    </div>
+</div>
+
+<script>
+    // Helper to get array of values from input
+    function getArray(id) {
+        return document.getElementById(id).value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+
+    // Helper for Kibana Query Language (Malcolm)
+    function buildKqlOr(field, arr, quote = false) {
+        if (arr.length === 0) return null;
+        const formatted = arr.map(v => quote ? `"${v}"` : v);
+        if (arr.length === 1) return `${field}: ${formatted[0]}`;
+        return `${field}: (${formatted.join(" or ")})`;
+    }
+
+    // Helper for Arkime arrays
+    function buildArkimeOr(field, arr, quote = false) {
+        if (arr.length === 0) return null;
+        const formatted = arr.map(v => quote ? `"${v}"` : v);
+        if (arr.length === 1) return `${field} == ${formatted[0]}`;
+        return `${field} == [${formatted.join(", ")}]`;
+    }
+
+    // Helper for Wireshark sets
+    function buildWsOr(field, arr) {
+        if (arr.length === 0) return null;
+        if (arr.length === 1) return `${field} == ${arr[0]}`;
+        return `${field} in {${arr.join(" ")}}`;
+    }
+
+    function generateQuery() {
+        const platform = document.getElementById('platform').value;
+        const srcIps = getArray('srcIp');
+        const dstIps = getArray('dstIp');
+        const dstPorts = getArray('dstPort');
+        const protocols = getArray('protocol');
+        const excludeIps = getArray('excludeIp');
+
+        let query = "";
+
+        switch(platform) {
+            case 'malcolm':
+                let kqlFilters = [];
+                if (srcIps.length) kqlFilters.push(buildKqlOr("source.ip", srcIps, true));
+                if (dstIps.length) kqlFilters.push(buildKqlOr("destination.ip", dstIps, true));
+                if (dstPorts.length) kqlFilters.push(buildKqlOr("destination.port", dstPorts, false));
+                if (protocols.length) kqlFilters.push(buildKqlOr("network.protocol", protocols, true));
+                
+                if (excludeIps.length) {
+                    excludeIps.forEach(ip => kqlFilters.push(`NOT source.ip:"${ip}" AND NOT destination.ip:"${ip}"`));
+                }
+                
+                query = kqlFilters.length > 0 ? kqlFilters.join(" AND \n") : "*:*";
+                break;
+
+            case 'arkime':
+                let arkFilters = [];
+                if (srcIps.length) arkFilters.push(buildArkimeOr("ip.src", srcIps));
+                if (dstIps.length) arkFilters.push(buildArkimeOr("ip.dst", dstIps));
+                if (dstPorts.length) arkFilters.push(buildArkimeOr("port.dst", dstPorts));
+                if (protocols.length) arkFilters.push(buildArkimeOr("protocols", protocols));
+                
+                if (excludeIps.length) {
+                    excludeIps.forEach(ip => arkFilters.push(`ip != ${ip}`));
+                }
+                
+                query = arkFilters.length > 0 ? arkFilters.join(" && \n") : "";
+                break;
+
+            case 'wireshark':
+                let wsFilters = [];
+                if (srcIps.length) wsFilters.push(buildWsOr("ip.src", srcIps));
+                if (dstIps.length) wsFilters.push(buildWsOr("ip.dst", dstIps));
+                
+                if (dstPorts.length) {
+                    if (dstPorts.length === 1) {
+                        wsFilters.push(`(tcp.port == ${dstPorts[0]} || udp.port == ${dstPorts[0]})`);
+                    } else {
+                        wsFilters.push(`(tcp.port in {${dstPorts.join(" ")}} || udp.port in {${dstPorts.join(" ")}})`);
+                    }
+                }
+                
+                if (protocols.length) {
+                    if (protocols.length === 1) {
+                        wsFilters.push(`${protocols[0].toLowerCase()}`);
+                    } else {
+                        wsFilters.push(`(${protocols.map(p => p.toLowerCase()).join(" || ")})`);
+                    }
+                }
+                
+                if (excludeIps.length) {
+                    excludeIps.forEach(ip => wsFilters.push(`ip.addr != ${ip}`));
+                }
+                
+                query = wsFilters.length > 0 ? wsFilters.join(" && \n") : "";
+                break;
+        }
+
+        document.getElementById('queryOutput').textContent = query;
+    }
+
+    function copyToClipboard() {
+        const query = document.getElementById('queryOutput').textContent;
+        navigator.clipboard.writeText(query).then(() => {
+            const confirmMsg = document.getElementById('copyConfirm');
+            confirmMsg.style.opacity = 1;
+            setTimeout(() => { confirmMsg.style.opacity = 0; }, 2000);
+        });
+    }
+
+    window.onload = generateQuery;
+</script>
+
+</body>
+</html>
