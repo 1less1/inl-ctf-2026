@@ -23,6 +23,11 @@ Investigate the suspected intrusion across Celestic's infrastructure to confirm 
 - ### [Challenges](./challenges/challenges.md)  
 - ### [Tools](./tools/tools.md)  
 
+## CTF Scoreboard
+- Shoutout **JFHQ-IA** for 2nd place!  
+
+![CTF Scoreboard](./images/ctf_scoreboard.png)
+
 ## ICS Water System Presentations
 ![Data Net Architecture - Water Systems](./images/ics_presentations/data_net_architecture_water_systems.png)
 ![High Impact Events - Water Systems](./images/ics_presentations/high_impact_events_water_systems.png)
