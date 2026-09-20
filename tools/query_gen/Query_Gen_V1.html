@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal SIEM Query Builder</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --border: #334155;
+            --input-bg: #0f172a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background-color: var(--panel-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        h2 { margin-top: 0; font-size: 1.2rem; color: var(--accent); display: flex; justify-content: space-between; align-items: center;}
+        .form-group { margin-bottom: 1rem; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-muted);
+        }
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .platform-select {
+            background-color: #0369a1;
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .help-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+        .code-container {
+            background-color: #000;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            color: #10b981;
+            min-height: 250px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background-color: #7dd3fc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="panel">
+        <div class="form-group">
+            <label style="color: var(--accent); font-size: 1rem;">Target SIEM / Platform</label>
+            <select id="platform" class="platform-select" onchange="generateQuery()">
+                <option value="crowdstrike">CrowdStrike Advanced SIEM (CQL)</option>
+                <option value="secops">Google SecOps (UDM Search)</option>
+                <option value="security_onion">Security Onion (OQL / Lucene)</option>
+                <option value="splunk">Splunk (SPL)</option>
+            </select>
+        </div>
+
+        <div class="help-text" style="margin-bottom: 1rem;">Use commas to search multiple items (e.g., HOST1, HOST2). Use a pipe | for Regex patterns.</div>
+        
+        <div class="form-group">
+            <label>Hostname</label>
+            <input type="text" id="hostname" oninput="generateQuery()" placeholder="e.g. WIN-SRV-01, WIN-SRV-02">
+        </div>
+
+        <div class="form-group">
+            <label>Target Process ID</label>
+            <input type="text" id="targetPid" oninput="generateQuery()" placeholder="e.g. 13337, 8080">
+        </div>
+
+        <div class="form-group">
+            <label>Parent Process ID</label>
+            <input type="text" id="parentPid" oninput="generateQuery()" placeholder="e.g. 4092, 1111">
+        </div>
+
+        <div class="form-group">
+            <label>SHA256 Hash</label>
+            <input type="text" id="sha256" oninput="generateQuery()" placeholder="e.g. hash1, hash2">
+        </div>
+
+        <div class="form-group">
+            <label>Command Line Regex</label>
+            <input type="text" id="cmdRegex" oninput="generateQuery()" placeholder="e.g. -enc|mimikatz|bypass">
+        </div>
+
+        <div class="form-group">
+            <label>Exclude Data Sources</label>
+            <input type="text" id="excludedSources" oninput="generateQuery()" placeholder="e.g. test_policy, dev_group">
+        </div>
+    </div>
+
+    <div class="panel" style="height: fit-content;">
+        <h2>Generated Query</h2>
+        <div class="code-container" id="queryOutput"></div>
+        <button onclick="copyToClipboard()">Copy to Clipboard</button>
+        <span id="copyConfirm" style="color: var(--accent); margin-top: 0.5rem; display: block; text-align: center; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s;">Copied!</span>
+    </div>
+</div>
+
+<script>
+    // Helper to get array of values from input
+    function getArray(id) {
+        return document.getElementById(id).value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+
+    // Helper to build boolean OR groups for standard Lucene/UDM/SPL queries
+    function buildBooleanOr(field, arr, quote = true) {
+        if (arr.length === 0) return null;
+        const formatted = arr.map(v => quote ? `${field}="${v}"` : `${field}=${v}`);
+        if (arr.length === 1) return formatted[0];
+        return `(${formatted.join(" OR ")})`;
+    }
+
+    // Helper to build Security Onion Lucene syntax
+    function buildLuceneOr(field, arr) {
+        if (arr.length === 0) return null;
+        const formatted = arr.map(v => `${field}:"${v}"`);
+        if (arr.length === 1) return formatted[0];
+        return `(${formatted.join(" OR ")})`;
+    }
+
+    function generateQuery() {
+        const platform = document.getElementById('platform').value;
+        const hosts = getArray('hostname');
+        const targetPids = getArray('targetPid');
+        const parentPids = getArray('parentPid');
+        const hashes = getArray('sha256');
+        const cmdRegex = document.getElementById('cmdRegex').value.trim();
+        const exclusions = getArray('excludedSources');
+
+        let query = "";
+
+        switch(platform) {
+            case 'crowdstrike':
+                let prePipe = [];
+                if (hosts.length) prePipe.push(buildBooleanOr("ComputerName", hosts));
+                if (targetPids.length) prePipe.push(buildBooleanOr("TargetProcessId", targetPids));
+                if (parentPids.length) prePipe.push(buildBooleanOr("ParentProcessId", parentPids));
+
+                query = prePipe.length > 0 ? prePipe.join(" ") + "\n| " : "";
+                query += "#event_simpleName=ProcessRollup2";
+
+                if (hashes.length) query += `\n| in(field="SHA256HashData", values=[${hashes.map(h => `"${h}"`).join(", ")}], ignoreCase=true)`;
+                if (cmdRegex) {
+                    let safeRegex = cmdRegex.replace(/\//g, "\\/");
+                    query += `\n| CommandLine=/(?i)${safeRegex}/`;
+                }
+                if (exclusions.length === 1) {
+                    query += `\n| DataSource != "${exclusions[0]}"`;
+                } else if (exclusions.length > 1) {
+                    query += `\n| !in(field="DataSource", values=[${exclusions.map(e => `"${e}"`).join(", ")}], ignoreCase=true)`;
+                }
+                query += "\n| table([@timestamp, ComputerName, TargetProcessId, ImageFileName, CommandLine])";
+                break;
+
+            case 'secops':
+                // Google SecOps uses UDM search syntax (Dot notation, strict AND/OR logic)
+                let udmFilters = ['metadata.event_type = "PROCESS_LAUNCH"'];
+                if (hosts.length) udmFilters.push(buildBooleanOr("principal.hostname", hosts));
+                if (targetPids.length) udmFilters.push(buildBooleanOr("target.process.pid", targetPids, false));
+                if (parentPids.length) udmFilters.push(buildBooleanOr("principal.process.pid", parentPids, false));
+                if (hashes.length) udmFilters.push(buildBooleanOr("target.process.file.sha256", hashes));
+                if (cmdRegex) {
+                    let safeRegex = cmdRegex.replace(/\//g, "\\/");
+                    udmFilters.push(`target.process.command_line = /${safeRegex}/`);
+                }
+                if (exclusions.length) {
+                    exclusions.forEach(e => udmFilters.push(`metadata.product_name != "${e}"`));
+                }
+                query = udmFilters.join(" AND\n");
+                break;
+
+            case 'security_onion':
+                // Security Onion uses Lucene search syntax + OQL pipes
+                let soFilters = [];
+                if (hosts.length) soFilters.push(buildLuceneOr("host.name", hosts));
+                if (targetPids.length) soFilters.push(buildLuceneOr("process.pid", targetPids));
+                if (parentPids.length) soFilters.push(buildLuceneOr("process.parent.pid", parentPids));
+                if (hashes.length) soFilters.push(buildLuceneOr("process.hash.sha256", hashes));
+                if (cmdRegex) {
+                    soFilters.push(`process.command_line:/.*(${cmdRegex}).*/`);
+                }
+                if (exclusions.length) {
+                    exclusions.forEach(e => soFilters.push(`NOT event.module:"${e}"`));
+                }
+                
+                query = soFilters.length > 0 ? soFilters.join(" AND\n") : "event.dataset:*";
+                query += "\n| table @timestamp host.name process.pid process.command_line";
+                break;
+
+            case 'splunk':
+                // Splunk uses SPL 
+                let splFilters = ['index=*', 'sourcetype=*'];
+                if (hosts.length) splFilters.push(buildBooleanOr("host", hosts));
+                if (targetPids.length) splFilters.push(buildBooleanOr("ProcessId", targetPids));
+                if (parentPids.length) splFilters.push(buildBooleanOr("ParentProcessId", parentPids));
+                if (hashes.length) splFilters.push(buildBooleanOr("SHA256", hashes));
+                if (exclusions.length) {
+                    exclusions.forEach(e => splFilters.push(`NOT sourcetype="${e}"`));
+                }
+                
+                query = splFilters.join(" ");
+                if (cmdRegex) {
+                    query += `\n| regex CommandLine="(?i)(${cmdRegex})"`;
+                }
+                query += "\n| table _time, host, ProcessId, CommandLine";
+                break;
+        }
+
+        document.getElementById('queryOutput').textContent = query;
+    }
+
+    function copyToClipboard() {
+        const query = document.getElementById('queryOutput').textContent;
+        navigator.clipboard.writeText(query).then(() => {
+            const confirmMsg = document.getElementById('copyConfirm');
+            confirmMsg.style.opacity = 1;
+            setTimeout(() => { confirmMsg.style.opacity = 0; }, 2000);
+        });
+    }
+
+    // Initialize on page load
+    window.onload = generateQuery;
+</script>
+
+</body>
+</html>

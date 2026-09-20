@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Threat Hunt Logger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function updateFormFields() {
+            const team = document.getElementById('team').value;
+            const networkFields = document.getElementById('network-fields');
+            const hostFields = document.getElementById('host-fields');
+
+            if (team === 'Network') {
+                networkFields.classList.remove('hidden');
+                hostFields.classList.add('hidden');
+            } else if (team === 'Host') {
+                hostFields.classList.remove('hidden');
+                networkFields.classList.add('hidden');
+            } else {
+                networkFields.classList.remove('hidden');
+                hostFields.classList.remove('hidden');
+            }
+            generateLog();
+        }
+
+        function getVal(id) {
+            let val = document.getElementById(id).value.trim();
+            
+            // Force these specific fields to uppercase in the log output
+            if (['hostname', 'user-account', 'hash', 'protocol'].includes(id)) {
+                val = val.toUpperCase();
+            }
+            
+            return val ? val : '[Not Provided]';
+        }
+
+        function generateLog() {
+            const team = document.getElementById('team').value;
+            
+            // Format the datetime-local output to remove the 'T' for cleaner logging
+            let rawTime = getVal('timestamp');
+            let formattedTime = rawTime !== '[Not Provided]' ? rawTime.replace('T', ' ') : rawTime;
+
+            // Meta
+            let logOutput = `==================================================\n`;
+            logOutput += `[ EVENT METADATA ]\n`;
+            logOutput += `Timestamp (UTC) : ${formattedTime}\n`;
+            logOutput += `Analyst         : ${getVal('analyst')}\n`;
+            logOutput += `Team/Scope      : ${team}\n`;
+            logOutput += `Severity        : ${getVal('severity')}\n`;
+            logOutput += `MITRE ATT&CK    : ${getVal('mitre')}\n`;
+            logOutput += `==================================================\n`;
+
+            if (team === 'Host' || team === 'Both') {
+                logOutput += `[ HOST & EXECUTION ARTIFACTS ]\n`;
+                logOutput += `Hostname        : ${getVal('hostname')}\n`;
+                logOutput += `Host IP         : ${getVal('host-ip')}\n`;
+                logOutput += `User Account    : ${getVal('user-account')}\n`;
+                logOutput += `Parent Process  : ${getVal('parent-process')}\n`;
+                logOutput += `Target Process  : ${getVal('process')}\n`;
+                logOutput += `File Path       : ${getVal('filepath')}\n`;
+                logOutput += `Command Line    : ${getVal('cmdline')}\n`;
+                logOutput += `File Hash       : ${getVal('hash')}\n`;
+                logOutput += `--------------------------------------------------\n`;
+            }
+
+            if (team === 'Network' || team === 'Both') {
+                logOutput += `[ NETWORK ARTIFACTS ]\n`;
+                logOutput += `Source IP       : ${getVal('src-ip')}\n`;
+                logOutput += `Source Port     : ${getVal('src-port')}\n`;
+                logOutput += `Dest IP         : ${getVal('dst-ip')}\n`;
+                logOutput += `Dest Port       : ${getVal('dst-port')}\n`;
+                logOutput += `Protocol        : ${getVal('protocol')}\n`;
+                logOutput += `Domain / URL    : ${getVal('domain')}\n`;
+                logOutput += `--------------------------------------------------\n`;
+            }
+
+            const desc = document.getElementById('description').value.trim();
+            logOutput += `[ NARRATIVE & TIMELINE CONTEXT ]\n${desc ? desc : '[No description provided]'}\n`;
+            logOutput += `==================================================\n`;
+            
+            document.getElementById('log-output').value = logOutput;
+        }
+
+        function copyToClipboard() {
+            const logOutput = document.getElementById('log-output');
+            logOutput.select();
+            document.execCommand('copy');
+            
+            const btn = document.getElementById('copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Copied!';
+            btn.classList.add('bg-green-600', 'hover:bg-green-500');
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('bg-green-600', 'hover:bg-green-500');
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', generateLog);
+            });
+
+            // Restrict IP and Port fields to only numbers and periods
+            const ipPortFields = document.querySelectorAll('.restrict-ip-port');
+            ipPortFields.forEach(field => {
+                field.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9.]/g, '');
+                });
+            });
+            
+            // Set initial timestamp to UTC formatted for datetime-local
+            const now = new Date();
+            const year = now.getUTCFullYear();
+            const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(now.getUTCDate()).padStart(2, '0');
+            const hours = String(now.getUTCHours()).padStart(2, '0');
+            const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+            
+            document.getElementById('timestamp').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            generateLog();
+        });
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-200 p-4 md:p-8 min-h-screen">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Input Section (Left Side) -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Metadata Card -->
+            <div class="bg-gray-800 p-5 rounded-lg shadow-lg border border-gray-700">
+                <h2 class="text-xl font-bold mb-4 text-blue-400 border-b border-gray-700 pb-2">Event Metadata</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Analyst</label>
+                        <input type="text" id="analyst" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Timestamp (UTC)</label>
+                        <input type="datetime-local" id="timestamp" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Team / Scope</label>
+                        <select id="team" onchange="updateFormFields()" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                            <option value="Both">Both (Full Scope)</option>
+                            <option value="Host">Host</option>
+                            <option value="Network">Network</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Severity</label>
+                        <select id="severity" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                            <option value="Low">Low (Anomalous)</option>
+                            <option value="Medium">Medium (Suspicious)</option>
+                            <option value="High">High (Malicious)</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">MITRE ATT&CK (e.g., T1059)</label>
+                        <input type="text" id="mitre" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm uppercase focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Host Card -->
+            <div id="host-fields" class="bg-gray-800 p-5 rounded-lg shadow-lg border border-gray-700 transition-all">
+                <h2 class="text-xl font-bold mb-4 text-purple-400 border-b border-gray-700 pb-2">Host & Execution Artifacts</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Hostname</label>
+                        <input type="text" id="hostname" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm uppercase focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Host IP</label>
+                        <input type="text" id="host-ip" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm restrict-ip-port focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">User Account / SID</label>
+                        <input type="text" id="user-account" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm uppercase focus:outline-none focus:border-purple-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Parent Process</label>
+                        <input type="text" id="parent-process" placeholder="e.g., cmd.exe" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Target Process</label>
+                        <input type="text" id="process" placeholder="e.g., powershell.exe" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-400">File Hash (SHA256/MD5)</label>
+                        <input type="text" id="hash" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm uppercase focus:outline-none focus:border-purple-500">
+                    </div>
+
+                    <div class="col-span-2 md:col-span-3">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">File Path</label>
+                        <input type="text" id="filepath" placeholder="C:\Users\Public\payload.exe" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="col-span-2 md:col-span-3">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Command Line Arguments</label>
+                        <input type="text" id="cmdline" placeholder="powershell.exe -nop -w hidden -EncodedCommand..." class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-purple-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Card -->
+            <div id="network-fields" class="bg-gray-800 p-5 rounded-lg shadow-lg border border-gray-700 transition-all">
+                <h2 class="text-xl font-bold mb-4 text-emerald-400 border-b border-gray-700 pb-2">Network Artifacts</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Source IP</label>
+                        <input type="text" id="src-ip" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm restrict-ip-port focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="col-span-2 md:col-span-2">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Source Port</label>
+                        <input type="text" id="src-port" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm restrict-ip-port focus:outline-none focus:border-emerald-500">
+                    </div>
+                    
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Destination IP</label>
+                        <input type="text" id="dst-ip" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm restrict-ip-port focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Dest Port</label>
+                        <input type="text" id="dst-port" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm restrict-ip-port focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Protocol</label>
+                        <input type="text" id="protocol" placeholder="TCP/UDP/HTTP" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm uppercase focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div class="col-span-2 md:col-span-4">
+                        <label class="block text-xs font-medium mb-1 text-gray-400">Domain / URL / URI</label>
+                        <input type="text" id="domain" placeholder="evil-c2.com/login.php" class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Narrative Card -->
+            <div class="bg-gray-800 p-5 rounded-lg shadow-lg border border-gray-700">
+                <h2 class="text-xl font-bold mb-4 text-amber-400 border-b border-gray-700 pb-2">Narrative & Context</h2>
+                <textarea id="description" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-amber-500" placeholder="Explain the sequence of events. E.g., 'Observed powershell.exe spawned by word.exe, which then initiated a network connection to a known malicious IP...'"></textarea>
+            </div>
+
+        </div>
+
+        <!-- Output Section (Right Side Sticky) -->
+        <div class="lg:col-span-5 h-full">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 flex flex-col h-full sticky top-6">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
+                    <h2 class="text-xl font-bold text-gray-200">Log Output</h2>
+                    <button id="copy-btn" onclick="copyToClipboard()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2 px-4 rounded transition-colors shadow">
+                        Copy to Tracker
+                    </button>
+                </div>
+                
+                <textarea id="log-output" readonly class="flex-grow w-full bg-gray-950 border border-gray-600 rounded p-4 font-mono text-xs text-gray-300 focus:outline-none resize-none min-h-[600px]"></textarea>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
